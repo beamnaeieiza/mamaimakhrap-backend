@@ -11,50 +11,52 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  firstname String  
-  lastname  String
-  email String @unique
-  faculty String
-  department String
-  role String
-  created_courses Course[] @relation("created_courses")
-  enrolled_courses Course[] @relation("enrolled_courses")
-  histories History[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               Int       @id @default(autoincrement())
+  uid              String    @unique
+  firstname        String    @default("")
+  lastname         String    @default("")
+  email            String
+  faculty          String    @default("")
+  department       String    @default("")
+  role             String    @default("unset")
+  avatar_url       String    @default("")
+  created_courses  Course[]  @relation("created_courses")
+  enrolled_courses Course[]  @relation("enrolled_courses")
+  histories        History[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model Course {
-  id Int @id @default(autoincrement())
-  name String
-  code String
-  created_by_users User[] @relation("created_courses")
-  enrolled_users User[] @relation("enrolled_courses")
-  course_rounds Round[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  name             String
+  code             String
+  created_by_users User[]   @relation("created_courses")
+  enrolled_users   User[]   @relation("enrolled_courses")
+  course_rounds    Round[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Round {
-  id Int @id @default(autoincrement())
-  course_id Int
-  course Course @relation(fields: [course_id], references: [id])
-  date DateTime
-  startAt DateTime
-  endAt DateTime 
+  id         Int       @id @default(autoincrement())
+  course_id  Int
+  course     Course    @relation(fields: [course_id], references: [id])
+  date       DateTime
+  startAt    DateTime
+  endAt      DateTime
   maxStudent Int
-  histories History[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  histories  History[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model History {
-  id Int @id @default(autoincrement())
-  user_id Int
-  round_id Int 
+  id       Int     @id @default(autoincrement())
+  user_id  Int
+  round_id Int
   feedback String
-  status Boolean
-  owner User @relation(fields: [user_id], references: [id])
-  round Round @relation(fields: [round_id], references: [id] )
-} 
+  status   Boolean
+  owner    User    @relation(fields: [user_id], references: [id])
+  round    Round   @relation(fields: [round_id], references: [id])
+}

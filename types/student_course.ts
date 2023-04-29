@@ -1,4 +1,4 @@
-export type student_course = {
+export type StudentCourseDto = {
   course_code: string;
   course_name: string;
 };
