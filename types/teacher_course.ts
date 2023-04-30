@@ -1,4 +1,4 @@
-export type teacher_course = {
-   course_code : string;
-   course_name : string;
+export type TeacherCourseDto = {
+  course_code: string;
+  course_name: string;
 };

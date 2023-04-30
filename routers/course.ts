@@ -1,33 +1,58 @@
-import express from 'express'
-import { PrismaClient } from '@prisma/client'
-import { CourseDto } from '../types/course';
-import { init } from '../utils/firebase';
-import { prisma } from '../utils/prisma';
+import express from "express";
+import { PrismaClient, User } from "@prisma/client";
+import { CourseDto } from "../types/course";
+import { init } from "../utils/firebase";
+import { prisma } from "../utils/prisma";
+import { TeacherCourseDto } from "../types/teacher_course";
+import { nanoid } from "nanoid";
 
-const router = express.Router();
+const courseRouter = express.Router();
+type UserRole = "student" | "teacher";
 
-router.get('/', async (req, res) => {
-    res.send('not implemented yet!') 
-})
+function checkRole(role: string, target: UserRole) {
+  return role === target;
+}
 
-router.post('/', async (req, res) => {
-    const data = req.body as CourseDto;
+courseRouter.get("/", async (req, res) => {
+  const role: UserRole = "teacher";
+  const userId = 1;
+  const isStudent = checkRole(role, "student");
+  const isTeacher = checkRole(role, "teacher");
 
-    const addCourseToUser = await prisma.user.update({
-        where: {
-            id: 1
+  const courses = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      enrolled_courses: isStudent,
+      created_courses: isTeacher,
+    },
+  });
+
+  return res.send(courses);
+});
+
+courseRouter.post("/", async (req, res) => {
+  const data = req.body as TeacherCourseDto;
+  const userId = 1;
+  const role = "teacher";
+
+  const result = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      created_courses: {
+        create: {
+          code: data.course_code,
+          name: data.course_name,
+          join_code: nanoid(8),
         },
-        data: {
-            created_courses: {
-                create: {
-                    name: "Advanced Java",
-                    code: "CSC323", 
-                }
-            }
-        }
-    })
+      },
+    },
+  });
+  console.log(result);
+  return res.send("Okay! That's cool!");
+});
 
-    res.send(addCourseToUser)
-})
-
-export default router
+export default courseRouter;

@@ -23,6 +23,7 @@ model User {
   created_courses  Course[]  @relation("created_courses")
   enrolled_courses Course[]  @relation("enrolled_courses")
   histories        History[]
+  created_rounds   Round[]
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }
@@ -30,7 +31,8 @@ model User {
 model Course {
   id               Int      @id @default(autoincrement())
   name             String
-  code             String
+  code             String 
+  join_code        String   @unique
   created_by_users User[]   @relation("created_courses")
   enrolled_users   User[]   @relation("enrolled_courses")
   course_rounds    Round[]
@@ -42,6 +44,8 @@ model Round {
   id         Int       @id @default(autoincrement())
   course_id  Int
   course     Course    @relation(fields: [course_id], references: [id])
+  user_id Int
+  user User @relation(fields: [user_id], references: [id])
   date       DateTime
   startAt    DateTime
   endAt      DateTime
