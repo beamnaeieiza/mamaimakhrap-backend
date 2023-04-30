@@ -41,26 +41,29 @@ app.get("/callback", (req, res) => {
         },
       });
 
-      // found means login
-      if (foundUser) {
-        return res.send({
-          token: jwt.sign({ id: foundUser.id, uid }, "MYSECRET!"),
-        });
-        // otherwise means register
-      } else {
-        const newUser = await prisma.user.create({
-          data: {
-            uid,
-            avatar_url: decodedToken.picture,
-            firstname: first_name,
-            lastname: last_name,
-            email: String(decodedToken.email),
-          },
-        });
-        return res.send({
-          token: jwt.sign({ id: newUser.id, uid }, "MYSECRET!"),
-        });
-      }
+        // found means login
+        if(foundUser){
+            return res.send({
+                token: jwt.sign({ id: foundUser.id, uid }, "MYSECRET!")
+            }) 
+            // otherwise means register
+        }else{
+            const newUser = await prisma.user.create({
+                data: {
+                    uid,
+                    avatar_url: decodedToken.picture,
+                    firstname: first_name,
+                    lastname: last_name,
+                    email: String(decodedToken.email),
+                } 
+            })
+            return res.send({
+                token: jwt.sign({ id: newUser.id, uid }, "MYSECRET!")
+            })
+        }
+    }).catch((error)=> {
+        res.status(500).send(error)
+        console.log(error)
     })
     .catch((error) => {
       res.status(500).send(error);
