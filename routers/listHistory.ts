@@ -17,7 +17,7 @@ listHistoryRouter.get("/", async (req, res) => {
   const isTeacher = checkRole(role, "teacher");
 
   if (isStudent) {
-    const history = await prisma.user.findMany({
+    const history = await prisma.user.findUnique({
       where: {
         id: userId,
       },
@@ -28,7 +28,7 @@ listHistoryRouter.get("/", async (req, res) => {
 
     return res.send(history);
   } else {
-    const rounds = await prisma.user.findMany({
+    const rounds = await prisma.user.findUnique({
       where: {
         id: userId,
       },

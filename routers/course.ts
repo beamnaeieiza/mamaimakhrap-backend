@@ -13,9 +13,47 @@ function checkRole(role: string, target: UserRole) {
   return role === target;
 }
 
+courseRouter.get("/:course_id", async (req, res) => {
+  const courseId = +req.params.course_id;
+  const joinCode = 123;
+  const role: UserRole = "teacher";
+  const userId = 3;
+  const isStudent = checkRole(role, "student");
+  const isTeacher = checkRole(role, "teacher");
+
+  if (isTeacher) {
+    const course = await prisma.course.findFirst({
+      where: {
+        id: courseId,
+      },
+      include: {
+        enrolled_users: true,
+      },
+    });
+    return res.send(course);
+  }
+
+  const historyAttendance = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      histories: {
+        where: {
+          round: {
+            course_id: courseId,
+          },
+        },
+      },
+    },
+  });
+
+  return res.send(historyAttendance);
+});
+
 courseRouter.get("/", async (req, res) => {
   const role: UserRole = "teacher";
-  const userId = 1;
+  const userId = 3;
   const isStudent = checkRole(role, "student");
   const isTeacher = checkRole(role, "teacher");
 
@@ -34,7 +72,7 @@ courseRouter.get("/", async (req, res) => {
 
 courseRouter.post("/", async (req, res) => {
   const userId = 1;
-  const role = "teacher";
+  const role = "student";
   if (checkRole(role, "teacher")) {
     const data = req.body as TeacherCourseDto;
 
@@ -65,6 +103,19 @@ courseRouter.post("/", async (req, res) => {
     if (result === null) {
       return res.send("A join code not found");
     }
+
+    const joinResult = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        enrolled_courses: {
+          connect: {
+            id: result.id,
+          },
+        },
+      },
+    });
     return res.send("Join course complete !");
   }
 });
