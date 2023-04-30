@@ -33,26 +33,40 @@ courseRouter.get("/", async (req, res) => {
 });
 
 courseRouter.post("/", async (req, res) => {
-  const data = req.body as TeacherCourseDto;
   const userId = 1;
   const role = "teacher";
+  if (checkRole(role, "teacher")) {
+    const data = req.body as TeacherCourseDto;
 
-  const result = await prisma.user.update({
-    where: {
-      id: userId,
-    },
-    data: {
-      created_courses: {
-        create: {
-          code: data.course_code,
-          name: data.course_name,
-          join_code: nanoid(8),
+    const result = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        created_courses: {
+          create: {
+            code: data.course_code,
+            name: data.course_name,
+            join_code: nanoid(8),
+          },
         },
       },
-    },
-  });
-  console.log(result);
-  return res.send("Okay! That's cool!");
+    });
+    return res.send("Okay! Created course complete!");
+  } else {
+    const data = req.body as { join_code: string };
+
+    const result = await prisma.course.findUnique({
+      where: {
+        join_code: data.join_code,
+      },
+    });
+
+    if (result === null) {
+      return res.send("A join code not found");
+    }
+    return res.send("Join course complete !");
+  }
 });
 
 export default courseRouter;
