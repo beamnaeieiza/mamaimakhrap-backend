@@ -1,3 +1,3 @@
-export type teacher_feedback = {
-  
+export type TeacherFeedbackDto = {
+  feedback_text: string;
 };

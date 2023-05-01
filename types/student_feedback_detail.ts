@@ -1,4 +1,4 @@
-export type student_feedback_detail = {
+export type StudentFeedbackDetailDto = {
   teacher_picture: string;
   course_code: string;
   teacher_name: string;
