@@ -320,4 +320,50 @@ courseRouter.get("/:course_id/:round_id/check", async (req, res) => {
   return res.send("Succesfully scan QR Code");
 });
 
+//get round of each course
+courseRouter.get("/:course_id/rounds", async (req, res) =>{
+  const courseId = +req.params.course_id;
+  try {
+    const attendanceRecords = await prisma.round.findMany({
+      where: {
+        course_id: courseId,
+      },
+    });
+    return res.send(attendanceRecords);
+    
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+  
+});
+
+//get round and course info and list USER attend
+courseRouter.get("/:course_id/rounds/:rounds_id", async (req, res) =>{
+  const roundId = +req.params.rounds_id;
+  const courseId = +req.params.course_id;
+
+  try {
+    const roundedCourse = await prisma.round.findMany({
+      where: {
+        id: roundId,
+        course_id: courseId
+      },
+      include:{
+        course: true,
+        histories:{
+          select:{
+            owner: true
+          }
+        }
+      }
+    });
+    return res.send(roundedCourse);
+    
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
 export default courseRouter;

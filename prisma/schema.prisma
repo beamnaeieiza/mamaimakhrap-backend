@@ -19,11 +19,11 @@ model User {
   avatar_url       String     @default("")
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
+  created_courses  Course[]   @relation("created_courses")
   given_feedbacks  Feedback[] @relation("students")
   feedbacks        Feedback[] @relation("feedback_owners")
   histories        History[]
   created_rounds   Round[]
-  created_courses  Course[]   @relation("created_courses")
   enrolled_courses Course[]   @relation("enrolled_courses")
 }
 
@@ -34,11 +34,13 @@ model Course {
   join_code       String     @unique
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
+  userId          Int
+  created_by_user User       @relation("created_courses", fields: [userId], references: [id])
   course_feedback Feedback[]
   course_rounds   Round[]
-  created_by_user User       @relation("created_courses", fields: [userId], references: [id])
   enrolled_users  User[]     @relation("enrolled_courses")
-  userId          Int
+
+  @@index([userId], map: "Course_userId_fkey")
 }
 
 model Round {

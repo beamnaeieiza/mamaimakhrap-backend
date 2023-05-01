@@ -28,4 +28,22 @@ meRouter.post("/me/role", async (req, res) => {
   return res.send(role);
 });
 
+//get student/teacher's profile
+meRouter.get("/me", async (req, res) =>{
+    const userId = 1;
+    try {
+       const userProfile = await prisma.user.findUnique({
+           where: {
+               id: userId,
+           },
+        
+        });
+        return res.send(userProfile);
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+      }
+});
+
 export default meRouter;
