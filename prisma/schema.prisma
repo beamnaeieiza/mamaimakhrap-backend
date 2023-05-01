@@ -28,16 +28,17 @@ model User {
 }
 
 model Course {
-  id               Int        @id @default(autoincrement())
-  name             String
-  code             String
-  join_code        String     @unique
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  course_feedback  Feedback[]
-  course_rounds    Round[]
-  created_by_users User[]     @relation("created_courses")
-  enrolled_users   User[]     @relation("enrolled_courses")
+  id              Int        @id @default(autoincrement())
+  name            String
+  code            String
+  join_code       String     @unique
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  course_feedback Feedback[]
+  course_rounds   Round[]
+  created_by_user User       @relation("created_courses", fields: [userId], references: [id])
+  enrolled_users  User[]     @relation("enrolled_courses")
+  userId          Int
 }
 
 model Round {

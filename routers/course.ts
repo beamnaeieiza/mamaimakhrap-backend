@@ -208,12 +208,32 @@ courseRouter.delete("/:course_id/students/:student_id", async (req, res) => {
   return res.send(deleteStudent);
 });
 
-//add feedback to student
+//add feedback to student fix teacher ID
 courseRouter.post("/:course_id/students/:student_id", async (req, res) => {
-  const userId = 3;
+  const userId = (req as any).user.id;
   const courseId = +req.params.course_id;
   const studentId = +req.params.student_id;
   const data = req.body as TeacherFeedbackDto;
+
+  const user = await prisma.user.findFirst({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (user?.role != "teacher") {
+    return res.json("You don't have permission.");
+  }
+
+  const checkCourse = await prisma.course.findFirst({
+    where: {
+      id: courseId,
+    },
+  });
+
+  if (checkCourse?.userId != userId) {
+    return res.json("You didn't create this course.");
+  }
 
   const addFeedbackStudent = await prisma.course.update({
     where: {
@@ -234,11 +254,11 @@ courseRouter.post("/:course_id/students/:student_id", async (req, res) => {
                       id: studentId,
                     },
                   },
-                  // teacher: {
-                  //   connect: {
-                  //     id: userId,
+                  //   teacher: {
+                  //     connect: {
+                  //       id: userId,
+                  //     },
                   //   },
-                  // },
 
                   feedbackText: data.feedback_text,
                   course: {
