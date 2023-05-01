@@ -15,15 +15,17 @@ function checkRole(role: string, target: UserRole) {
   return role === target;
 }
 
+//Teacher list student that attendanced that (each) course - not sure
+//Student list course that scan attendance in that (each) course
 courseRouter.get("/:course_id", async (req, res) => {
   const courseId = +req.params.course_id;
   const joinCode = 123;
   const role: UserRole = "teacher";
-  const userId = 3;
+  const userId = 1;
   const isStudent = checkRole(role, "student");
   const isTeacher = checkRole(role, "teacher");
 
-  if (isTeacher) {
+  if (isStudent) {
     const course = await prisma.course.findFirst({
       where: {
         id: courseId,
@@ -35,24 +37,24 @@ courseRouter.get("/:course_id", async (req, res) => {
     return res.send(course);
   }
 
-  const historyAttendance = await prisma.user.findUnique({
+  const historyAttendance = await prisma.course.findUnique({
     where: {
-      id: userId,
+      id: courseId,
     },
     include: {
-      histories: {
-        where: {
-          round: {
-            course_id: courseId,
-          },
+      course_rounds: {
+        include: {
+          histories: true,
         },
       },
+      enrolled_users: true,
     },
   });
 
   return res.send(historyAttendance);
 });
 
+//List course that teacher created & student enrolled
 courseRouter.get("/", async (req, res) => {
   const role: UserRole = "teacher";
   const userId = 3;
@@ -72,6 +74,7 @@ courseRouter.get("/", async (req, res) => {
   return res.send(courses);
 });
 
+//Teacher create course & Student enroll course
 courseRouter.post("/", async (req, res) => {
   const userId = 1;
   const role = "student";
@@ -92,7 +95,7 @@ courseRouter.post("/", async (req, res) => {
         },
       },
     });
-    return res.send("Okay! Created course complete!");
+    return res.send("Created course complete!");
   } else {
     const data = req.body as { join_code: string };
 
@@ -207,6 +210,7 @@ courseRouter.delete("/:course_id/students/:student_id", async (req, res) => {
 
 //add feedback to student
 courseRouter.post("/:course_id/students/:student_id", async (req, res) => {
+  const userId = 3;
   const courseId = +req.params.course_id;
   const studentId = +req.params.student_id;
   const data = req.body as TeacherFeedbackDto;
@@ -225,6 +229,17 @@ courseRouter.post("/:course_id/students/:student_id", async (req, res) => {
             data: {
               feedbacks: {
                 create: {
+                  student: {
+                    connect: {
+                      id: studentId,
+                    },
+                  },
+                  // teacher: {
+                  //   connect: {
+                  //     id: userId,
+                  //   },
+                  // },
+                  
                   feedbackText: data.feedback_text,
                   course: {
                     connect: {
@@ -240,7 +255,49 @@ courseRouter.post("/:course_id/students/:student_id", async (req, res) => {
     },
   });
 
-  res.send(addFeedbackStudent);
+  res.send("Added feedback successfully!");
+});
+
+//Student scan qrcode
+courseRouter.get("/:course_id/:round_id/check", async (req, res) => {
+  const userId = 1;
+  const roundId = +req.params.round_id;
+  const course_id = +req.params.course_id;
+
+  const scanQrcode = await prisma.course.update({
+    where: {
+      id: course_id,
+    },
+    data: {
+      course_rounds: {
+        update: [
+          {
+            where: {
+              id: roundId,
+            },
+            data: {
+              histories: {
+                connect: {
+                  id: roundId,
+                },
+                create: {
+                  owner: {
+                    connect: {
+                      id: userId,
+                    },
+                  },
+                  feedback: "",
+                  status: false,
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  return res.send("Succesfully scan QR Code");
 });
 
 export default courseRouter;
