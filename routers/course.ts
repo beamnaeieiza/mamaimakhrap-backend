@@ -11,7 +11,7 @@ import { TeacherFeedbackDto } from "../types/teacher_feedback";
 const courseRouter = express.Router();
 type UserRole = "student" | "teacher";
 
-function checkRole(role: string, target: UserRole) {
+export function checkRole(role: string, target: UserRole) {
   return role === target;
 }
 

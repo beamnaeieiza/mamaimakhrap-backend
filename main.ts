@@ -7,6 +7,7 @@ import { User } from "@prisma/client";
 import { prisma } from "./utils/prisma";
 import jwt from "jsonwebtoken";
 import courseRouter from "./routers/course";
+import feedbackRouter from "./routers/feedback";
 
 const firebase = init();
 
@@ -14,6 +15,7 @@ app.use(express.json()); // make use of json body.
 
 app.use("/auth", authRouter);
 app.use("/course", courseRouter);
+app.use("/feedbacks", feedbackRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello kuy");
