@@ -53,9 +53,6 @@ model Round {
   histories  History[]
   course     Course    @relation(fields: [course_id], references: [id])
   user       User      @relation(fields: [user_id], references: [id])
-
-  @@index([course_id], map: "Round_course_id_fkey")
-  @@index([user_id], map: "Round_user_id_fkey")
 }
 
 model History {
@@ -66,9 +63,6 @@ model History {
   status   Boolean
   round    Round   @relation(fields: [round_id], references: [id])
   owner    User    @relation(fields: [user_id], references: [id])
-
-  @@index([round_id], map: "History_round_id_fkey")
-  @@index([user_id], map: "History_user_id_fkey")
 }
 
 model Feedback {
@@ -78,12 +72,8 @@ model Feedback {
   course_id    Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  teacher_id   Int
+  teacher_id   Int?
   course       Course   @relation(fields: [course_id], references: [id])
   student      User     @relation("students", fields: [student_id], references: [id])
-  teacher      User     @relation("feedback_owners", fields: [teacher_id], references: [id])
-
-  @@index([course_id], map: "Feedback_course_id_fkey")
-  @@index([student_id], map: "Feedback_student_id_fkey")
-  @@index([teacher_id], map: "Feedback_teacher_id_fkey")
+  teacher      User?    @relation("feedback_owners", fields: [teacher_id], references: [id])
 }

@@ -239,7 +239,7 @@ courseRouter.post("/:course_id/students/:student_id", async (req, res) => {
                   //     id: userId,
                   //   },
                   // },
-                  
+
                   feedbackText: data.feedback_text,
                   course: {
                     connect: {
