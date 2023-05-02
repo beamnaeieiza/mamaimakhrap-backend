@@ -5,7 +5,7 @@ import { checkRole } from "./course";
 const feedbackRouter = express.Router();
 
 feedbackRouter.get("/", async (req, res) => {
-  const userId = 1;
+  const userId = (req as any).user.id;
   const feedbacks = await prisma.feedback.findMany({
     where: {
       student_id: userId,
@@ -20,7 +20,7 @@ feedbackRouter.get("/", async (req, res) => {
 });
 
 feedbackRouter.get("/:id", async (req, res) => {
-  const userId = 1;
+  const userId = (req as any).user.id;
   const feedbackId = +req.params.id;
   const feedback = await prisma.feedback.findFirst({
     where: {

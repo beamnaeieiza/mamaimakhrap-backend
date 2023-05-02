@@ -56,8 +56,8 @@ courseRouter.get("/:course_id", async (req, res) => {
 
 //List course that teacher created & student enrolled
 courseRouter.get("/", async (req, res) => {
-  const role: UserRole = "teacher";
-  const userId = 3;
+  const role: UserRole = "student";
+  const userId = (req as any).user.id;
   const isStudent = checkRole(role, "student");
   const isTeacher = checkRole(role, "teacher");
 
@@ -76,7 +76,7 @@ courseRouter.get("/", async (req, res) => {
 
 //Teacher create course & Student enroll course
 courseRouter.post("/", async (req, res) => {
-  const userId = 1;
+  const userId = (req as any).user.id;
   const role = "student";
   if (checkRole(role, "teacher")) {
     const data = req.body as TeacherCourseDto;
@@ -128,10 +128,7 @@ courseRouter.post("/", async (req, res) => {
 //post - generate QR code
 courseRouter.post("/:course_id/generate_qrcode", async (req, res) => {
   const courseId = +req.params.course_id;
-  const maxStudent = 1;
-  const start_date = "27/02/2023";
-  const end_date = "28/02/2023";
-  const userId = 3;
+  const userId = (req as any).user.id;
 
   const data = req.body as QRCodeDetailDto;
 
@@ -278,9 +275,9 @@ courseRouter.post("/:course_id/students/:student_id", async (req, res) => {
   res.send("Added feedback successfully!");
 });
 
-//Student scan qrcode
+//Student scan qrcode FIX
 courseRouter.get("/:course_id/:round_id/check", async (req, res) => {
-  const userId = 1;
+  const userId = (req as any).user.id;
   const roundId = +req.params.round_id;
   const course_id = +req.params.course_id;
 
@@ -321,7 +318,7 @@ courseRouter.get("/:course_id/:round_id/check", async (req, res) => {
 });
 
 //get round of each course
-courseRouter.get("/:course_id/rounds", async (req, res) =>{
+courseRouter.get("/:course_id/rounds", async (req, res) => {
   const courseId = +req.params.course_id;
   try {
     const attendanceRecords = await prisma.round.findMany({
@@ -330,16 +327,14 @@ courseRouter.get("/:course_id/rounds", async (req, res) =>{
       },
     });
     return res.send(attendanceRecords);
-    
   } catch (error) {
     console.error(error);
     return [];
   }
-  
 });
 
 //get round and course info and list USER attend
-courseRouter.get("/:course_id/rounds/:rounds_id", async (req, res) =>{
+courseRouter.get("/:course_id/rounds/:rounds_id", async (req, res) => {
   const roundId = +req.params.rounds_id;
   const courseId = +req.params.course_id;
 
@@ -347,22 +342,21 @@ courseRouter.get("/:course_id/rounds/:rounds_id", async (req, res) =>{
     const roundedCourse = await prisma.round.findMany({
       where: {
         id: roundId,
-        course_id: courseId
+        course_id: courseId,
       },
-      include:{
+      include: {
         course: true,
-        histories:{
-          select:{
-            owner: true
-          }
-        }
-      }
+        histories: {
+          select: {
+            owner: true,
+          },
+        },
+      },
     });
     return res.send(roundedCourse);
-    
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 });
 

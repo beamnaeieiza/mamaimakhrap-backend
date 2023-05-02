@@ -9,15 +9,18 @@ import jwt from "jsonwebtoken";
 import courseRouter from "./routers/course";
 import feedbackRouter from "./routers/feedback";
 import { authMiddleware } from "./middleware/auth";
+import meRouter from "./routers/me";
+import { auth } from "firebase-admin";
 
 const firebase = init();
 
 app.use(express.json()); // make use of json body.
 
 app.use("/auth", authRouter);
-app.use("/course", courseRouter);
-app.use("/feedbacks", feedbackRouter);
 app.use("/course", authMiddleware, courseRouter);
+app.use("/feedbacks", authMiddleware, feedbackRouter);
+app.use("/course", authMiddleware, courseRouter);
+app.use("/me", authMiddleware, meRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello kuy");

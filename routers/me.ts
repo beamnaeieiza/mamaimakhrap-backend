@@ -5,16 +5,16 @@ import { checkRole } from "./course";
 const meRouter = express.Router();
 
 //choose role
-meRouter.post("/me/role", async (req, res) => {
+meRouter.post("/role", async (req, res) => {
   const choosingRole = req.body.role;
-  const userId = 3;
+  const userId = (req as any).user.id;
   const user = await prisma.user.findFirst({
     where: {
       id: userId,
     },
   });
 
-  if (user?.role !== null) {
+  if (user?.role != "unset") {
     return res.send("You can not set role.");
   }
   const role = await prisma.user.update({
@@ -29,21 +29,32 @@ meRouter.post("/me/role", async (req, res) => {
 });
 
 //get student/teacher's profile
-meRouter.get("/me", async (req, res) =>{
-    const userId = 1;
-    try {
-       const userProfile = await prisma.user.findUnique({
-           where: {
-               id: userId,
-           },
-        
-        });
-        return res.send(userProfile);
-    }
-    catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-      }
+meRouter.get("/", async (req, res) => {
+  const userId = (req as any).user.id;
+  try {
+    const userProfile = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    return res.send({
+      id: userProfile!.id,
+      uid: userProfile!.uid,
+      firstname: userProfile!.firstname,
+      lastname: userProfile!.lastname,
+      email: userProfile!.email,
+      faculty: userProfile!.faculty,
+      department: userProfile!.department,
+      role: userProfile!.role,
+      avatar_url: userProfile!.avatar_url,
+      createdAt: new Date(userProfile!.createdAt).toISOString(),
+      updatedAt: new Date(userProfile!.updatedAt).toISOString(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
 });
 
 export default meRouter;
