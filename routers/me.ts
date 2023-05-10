@@ -2,6 +2,7 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import { checkRole } from "./course";
+import jwt from "jsonwebtoken";
 const meRouter = express.Router();
 
 //choose role
@@ -17,7 +18,7 @@ meRouter.post("/role", async (req, res) => {
   if (user?.role != "unset") {
     return res.send("You can not set role.");
   }
-  const role = await prisma.user.update({
+  const updatedUser = await prisma.user.update({
     where: {
       id: userId,
     },
@@ -25,7 +26,12 @@ meRouter.post("/role", async (req, res) => {
       role: choosingRole,
     },
   });
-  return res.send(role);
+  return res.send(
+    jwt.sign(
+      { id: updatedUser.id, uid: updatedUser.uid, role: updatedUser.role },
+      "MYSECRET!"
+    )
+  );
 });
 
 //get student/teacher's profile

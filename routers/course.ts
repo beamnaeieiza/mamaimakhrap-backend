@@ -20,12 +20,12 @@ export function checkRole(role: string, target: UserRole) {
 courseRouter.get("/:course_id", async (req, res) => {
   const courseId = +req.params.course_id;
   const joinCode = 123;
-  const role: UserRole = "teacher";
+  const role: UserRole = (req as any).user.role;
   const userId = 1;
   const isStudent = checkRole(role, "student");
   const isTeacher = checkRole(role, "teacher");
 
-  if (isStudent) {
+  if (isTeacher) {
     const course = await prisma.course.findFirst({
       where: {
         id: courseId,
@@ -56,7 +56,7 @@ courseRouter.get("/:course_id", async (req, res) => {
 
 //List course that teacher created & student enrolled
 courseRouter.get("/", async (req, res) => {
-  const role: UserRole = "student";
+  const role: UserRole = (req as any).user.role;
   const userId = (req as any).user.id;
   const isStudent = checkRole(role, "student");
   const isTeacher = checkRole(role, "teacher");
@@ -77,7 +77,7 @@ courseRouter.get("/", async (req, res) => {
 //Teacher create course & Student enroll course
 courseRouter.post("/", async (req, res) => {
   const userId = (req as any).user.id;
-  const role = "student";
+  const role = (req as any).user.role;
   if (checkRole(role, "teacher")) {
     const data = req.body as TeacherCourseDto;
 
@@ -231,52 +231,34 @@ courseRouter.post("/:course_id/students/:student_id", async (req, res) => {
   if (checkCourse?.userId != userId) {
     return res.json("You didn't create this course.");
   }
-
-  const addFeedbackStudent = await prisma.course.update({
-    where: {
-      id: courseId,
-    },
+  const createdFeedback = await prisma.feedback.create({
     data: {
-      enrolled_users: {
-        update: [
-          {
-            where: {
-              id: studentId,
-            },
-            data: {
-              feedbacks: {
-                create: {
-                  student: {
-                    connect: {
-                      id: studentId,
-                    },
-                  },
-                  //   teacher: {
-                  //     connect: {
-                  //       id: userId,
-                  //     },
-                  //   },
+      teacher: {
+        connect: {
+          id: userId,
+        },
+      },
+      student: {
+        connect: {
+          id: studentId,
+        },
+      },
 
-                  feedbackText: data.feedback_text,
-                  course: {
-                    connect: {
-                      id: courseId,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        ],
+      feedbackText: data.feedback_text,
+      course: {
+        connect: {
+          id: courseId,
+        },
       },
     },
   });
 
-  res.send("Added feedback successfully!");
+  //   res.send("Added feedback successfully!");
+  res.send(createdFeedback);
 });
 
 //Student scan qrcode FIX
-courseRouter.get("/:course_id/:round_id/check", async (req, res) => {
+courseRouter.post("/:course_id/:round_id/check", async (req, res) => {
   const userId = (req as any).user.id;
   const roundId = +req.params.round_id;
   const course_id = +req.params.course_id;

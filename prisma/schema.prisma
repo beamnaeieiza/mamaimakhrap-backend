@@ -81,10 +81,10 @@ model Feedback {
   course_id    Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  teacher_id   Int?
+  teacher_id   Int
   course       Course   @relation(fields: [course_id], references: [id])
   student      User     @relation("students", fields: [student_id], references: [id])
-  teacher      User?    @relation("feedback_owners", fields: [teacher_id], references: [id])
+  teacher      User     @relation("feedback_owners", fields: [teacher_id], references: [id])
 
   @@index([course_id], map: "Feedback_course_id_fkey")
   @@index([student_id], map: "Feedback_student_id_fkey")

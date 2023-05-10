@@ -11,12 +11,14 @@ import feedbackRouter from "./routers/feedback";
 import { authMiddleware } from "./middleware/auth";
 import meRouter from "./routers/me";
 import { auth } from "firebase-admin";
+import historyRouter from "./routers/history";
 
 const firebase = init();
 
 app.use(express.json()); // make use of json body.
 
 app.use("/auth", authRouter);
+app.use("/history", authMiddleware, historyRouter);
 app.use("/course", authMiddleware, courseRouter);
 app.use("/feedbacks", authMiddleware, feedbackRouter);
 app.use("/course", authMiddleware, courseRouter);
@@ -49,7 +51,10 @@ app.get("/callback", (req, res) => {
       // found means login
       if (foundUser) {
         return res.send({
-          token: jwt.sign({ id: foundUser.id, uid }, "MYSECRET!"),
+          token: jwt.sign(
+            { id: foundUser.id, uid, role: foundUser.role },
+            "MYSECRET!"
+          ),
         });
         // otherwise means register
       } else {
@@ -63,7 +68,10 @@ app.get("/callback", (req, res) => {
           },
         });
         return res.send({
-          token: jwt.sign({ id: newUser.id, uid }, "MYSECRET!"),
+          token: jwt.sign(
+            { id: newUser.id, uid, role: newUser.role },
+            "MYSECRET!"
+          ),
         });
       }
     })
