@@ -27,6 +27,10 @@ feedbackRouter.get("/:id", async (req, res) => {
       id: feedbackId,
       student_id: userId,
     },
+    include: {
+      course: true,
+      teacher: true,
+    },
   });
   return res.json(feedback);
 });

@@ -19,9 +19,10 @@ export function checkRole(role: string, target: UserRole) {
 //Student list course that scan attendance in that (each) course
 courseRouter.get("/:course_id", async (req, res) => {
   const courseId = +req.params.course_id;
+  const userId = (req as any).user.id;
   const joinCode = 123;
   const role: UserRole = (req as any).user.role;
-  const userId = 1;
+  //   const userId = 1;
   const isStudent = checkRole(role, "student");
   const isTeacher = checkRole(role, "teacher");
 
@@ -44,10 +45,14 @@ courseRouter.get("/:course_id", async (req, res) => {
     include: {
       course_rounds: {
         include: {
-          histories: true,
+          histories: {
+            where: {
+              user_id: userId,
+            },
+          },
         },
       },
-      enrolled_users: true,
+      //   enrolled_users: true,
     },
   });
 
@@ -203,6 +208,27 @@ courseRouter.delete("/:course_id/students/:student_id", async (req, res) => {
   });
 
   return res.send(deleteStudent);
+});
+
+courseRouter.get("/:course_id/students/:student_id", async (req, res) => {
+  const userId = (req as any).user.id;
+  const courseId = +req.params.course_id;
+  const studentId = +req.params.student_id;
+
+  const user = await prisma.course.findFirst({
+    where: {
+      id: courseId,
+    },
+    include: {
+      enrolled_users: {
+        where: {
+          id: studentId,
+        },
+      },
+    },
+  });
+
+  return res.send(user);
 });
 
 //add feedback to student fix teacher ID
