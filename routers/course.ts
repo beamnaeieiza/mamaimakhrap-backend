@@ -66,17 +66,33 @@ courseRouter.get("/", async (req, res) => {
   const isStudent = checkRole(role, "student");
   const isTeacher = checkRole(role, "teacher");
 
-  const courses = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      enrolled_courses: isStudent,
-      created_courses: isTeacher,
-    },
-  });
+  if (isStudent) {
+    const courses = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        enrolled_courses: true,
+        //   created_courses: isTeacher,
+      },
+    });
 
-  return res.send(courses);
+    return res.send(courses);
+  }
+
+  if (isTeacher) {
+    const courses = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        //   enrolled_courses: isStudent,
+        created_courses: true,
+      },
+    });
+
+    return res.send(courses);
+  }
 });
 
 //Teacher create course & Student enroll course
@@ -163,8 +179,8 @@ courseRouter.post("/:course_id/generate_qrcode", async (req, res) => {
               course_rounds: {
                 create: {
                   date: new Date(),
-                  startAt: new Date(data.start_date),
-                  endAt: new Date(data.end_date),
+                  startAt: new Date(),
+                  endAt: new Date(data.endAt),
                   maxStudent: +data.maxStudent,
                   user: {
                     connect: {
@@ -179,9 +195,19 @@ courseRouter.post("/:course_id/generate_qrcode", async (req, res) => {
       },
     },
     select: {
-      created_rounds: true,
+      created_rounds: {
+        where: {
+          endAt: new Date(data.endAt),
+        },
+        orderBy: {
+          id: "desc",
+        },
+        take: 1,
+      },
     },
   });
+
+  console.log(generateQRround);
 
   return res.send(generateQRround);
 });
@@ -284,14 +310,24 @@ courseRouter.post("/:course_id/students/:student_id", async (req, res) => {
 });
 
 //Student scan qrcode FIX
-courseRouter.post("/:course_id/:round_id/check", async (req, res) => {
+courseRouter.post("/check", async (req, res) => {
   const userId = (req as any).user.id;
-  const roundId = +req.params.round_id;
-  const course_id = +req.params.course_id;
+  const roundId = +req.body.round_id;
+
+  // Fetch round and course info
+  const round = await prisma.round.findFirst({
+    include: {
+      course: true,
+    },
+  });
+  console.log(round);
+  console.log(round?.course.id);
+
+  // Check if user is enrolled in the course
 
   const scanQrcode = await prisma.course.update({
     where: {
-      id: course_id,
+      id: round?.course.id,
     },
     data: {
       course_rounds: {

@@ -15,9 +15,6 @@ meRouter.post("/role", async (req, res) => {
     },
   });
 
-  if (user?.role != "unset") {
-    return res.send("You can not set role.");
-  }
   const updatedUser = await prisma.user.update({
     where: {
       id: userId,
@@ -26,12 +23,19 @@ meRouter.post("/role", async (req, res) => {
       role: choosingRole,
     },
   });
-  return res.send(
-    jwt.sign(
+  return res.send({
+    token: jwt.sign(
       { id: updatedUser.id, uid: updatedUser.uid, role: updatedUser.role },
       "MYSECRET!"
-    )
-  );
+    ),
+  });
+
+  // return res.send({
+  //   token: jwt.sign(
+  //     { id: newUser.id, uid, role: newUser.role },
+  //     "MYSECRET!"
+  //   ),
+  // });
 });
 
 //get student/teacher's profile
