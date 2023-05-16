@@ -58,4 +58,35 @@ historyRouter.get("/:id", async (req, res) => {
   return res.json(feedback);
 });
 
+historyRouter.get("/QR/listStudent", async (req, res) => {
+  const userId = (req as any).user.id;
+  const roundId = +req.body.round_id;
+  const round = await prisma.round.findFirst({
+    where: {
+      id: roundId,
+    },
+    include: {
+      course: true,
+    },
+  });
+  console.log(round);
+  console.log(round?.course.id);
+
+  const feedback = await prisma.round.findMany({
+    where: {
+      id: roundId,
+      user_id: userId,
+    },
+    include: {
+      course: true,
+      histories: {
+        include: {
+          owner: true,
+        },
+      },
+    },
+  });
+  return res.json(feedback);
+});
+
 export default historyRouter;
