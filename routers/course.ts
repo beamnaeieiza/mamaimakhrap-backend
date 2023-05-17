@@ -223,6 +223,7 @@ courseRouter.post("/:course_id/generate_qrcode", async (req, res) => {
 courseRouter.delete("/:course_id/students/:student_id", async (req, res) => {
   const courseId = +req.params.course_id;
   const studentId = +req.params.student_id;
+  const userId = req.body.uid;
 
   const deleteStudent = await prisma.course.update({
     where: {
@@ -230,7 +231,9 @@ courseRouter.delete("/:course_id/students/:student_id", async (req, res) => {
     },
     data: {
       enrolled_users: {
-        delete: {
+        disconnect: {
+          // uid: userId,
+          // uid: userId,
           id: studentId,
         },
       },
