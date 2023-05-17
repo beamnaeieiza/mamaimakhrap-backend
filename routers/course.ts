@@ -51,6 +51,13 @@ courseRouter.get("/:course_id", async (req, res) => {
             },
           },
         },
+        where: {
+          histories: {
+            some: {
+              user_id: userId,
+            },
+          },
+        },
       },
       //   enrolled_users: true,
     },
@@ -317,7 +324,7 @@ courseRouter.post("/check", async (req, res) => {
   // Fetch round and course info
   const round = await prisma.round.findFirst({
     where: {
-      id: roundId
+      id: roundId,
     },
     include: {
       course: true,
