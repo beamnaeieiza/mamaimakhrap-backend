@@ -324,6 +324,21 @@ courseRouter.post("/check", async (req, res) => {
   const userId = (req as any).user.id;
   const roundId = +req.body.round_id;
 
+  const countRound = await prisma.round.findMany({
+    where: {
+      id: roundId,
+    },
+    select: {
+      _count: {
+        select: {
+          histories: true,
+        },
+      },
+    },
+  });
+
+  console.log(countRound);
+
   // Fetch round and course info
   const round = await prisma.round.findFirst({
     where: {
@@ -337,41 +352,45 @@ courseRouter.post("/check", async (req, res) => {
   console.log(round?.course.id);
 
   // Check if user is enrolled in the course
-
-  const scanQrcode = await prisma.course.update({
-    where: {
-      id: round?.course.id,
-    },
-    data: {
-      course_rounds: {
-        update: [
-          {
-            where: {
-              id: roundId,
-            },
-            data: {
-              histories: {
-                // connect: {
-                //   id: roundId,
-                // },
-                create: {
-                  owner: {
-                    connect: {
-                      id: userId,
+  if (countRound[0]._count.histories <= round!.maxStudent) {
+    console.log("Lower");
+    const scanQrcode = await prisma.course.update({
+      where: {
+        id: round?.course.id,
+      },
+      data: {
+        course_rounds: {
+          update: [
+            {
+              where: {
+                id: roundId,
+              },
+              data: {
+                histories: {
+                  // connect: {
+                  //   id: roundId,
+                  // },
+                  create: {
+                    owner: {
+                      connect: {
+                        id: userId,
+                      },
                     },
+                    feedback: "",
+                    status: true,
                   },
-                  feedback: "",
-                  status: true,
                 },
               },
             },
-          },
-        ],
+          ],
+        },
       },
-    },
-  });
+    });
 
-  return res.send("Succesfully scan QR Code");
+    return res.send("Succesfully scan QR Code");
+  } else {
+    return res.send("The amount of student exceeded");
+  }
 });
 
 //get round of each course
