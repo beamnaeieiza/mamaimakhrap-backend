@@ -436,4 +436,27 @@ courseRouter.get("/:course_id/rounds/:rounds_id", async (req, res) => {
   }
 });
 
+//list checked-in Student
+courseRouter.get("/rounds/:rounds_id", async (req, res) => {
+  const roundId = +req.params.rounds_id;
+  // const courseId = +req.params.course_id;
+
+  try {
+    const roundedCourse = await prisma.history.findMany({
+      where: {
+        round_id: roundId,
+        //   course_id: courseId,
+      },
+      include: {
+        //   course: true,
+        owner: true,
+      },
+    });
+    return res.send(roundedCourse);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+});
+
 export default courseRouter;
