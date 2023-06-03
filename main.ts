@@ -25,7 +25,7 @@ app.use("/course", authMiddleware, courseRouter);
 app.use("/me", authMiddleware, meRouter);
 
 app.get("/", (req, res) => {
-  res.send("Hello kuy");
+  res.send("Hello!");
 });
 
 app.get("/callback", (req, res) => {
