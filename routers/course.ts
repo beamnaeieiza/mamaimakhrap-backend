@@ -157,19 +157,8 @@ courseRouter.post("/", async (req, res) => {
 courseRouter.post("/:course_id/generate_qrcode", async (req, res) => {
   const courseId = +req.params.course_id;
   const userId = (req as any).user.id;
-
+  const roundId = +req.body.round_id;
   const data = req.body as QRCodeDetailDto;
-
-  //   const user = await prisma.user.findUnique({
-  //     where: {
-  //       id: userId,
-  //     },
-  //     include: {
-  //       created_courses: true,
-  //     },
-  //   });
-
-  //   return res.json(user?.created_courses);
 
   const generateQRround = await prisma.user.update({
     where: {
@@ -348,11 +337,27 @@ courseRouter.post("/check", async (req, res) => {
       course: true,
     },
   });
+
+  if (!round) return res.send('errorrrr') 
   console.log(round);
   console.log(round?.course.id);
+  console.log(round?.endAt);
+
+  // Check if set datetime exceed current datetime?
+  const endtime = new Date(round?.endAt);
+  console.log('end:  ', endtime);
+  const now = new Date();
+  console.log('current:  ', now);
+
+  if(endtime > now){
+    console.log("You can scan QR code right now");
+  } else {
+    console.log("Time Exceed");
+    return res.send("The time is exceed");
+  }
 
   // Check if user is enrolled in the course
-  if (countRound[0]._count.histories <= round!.maxStudent) {
+  if (countRound[0]._count.histories < round!.maxStudent) {
     console.log("Lower");
     const scanQrcode = await prisma.course.update({
       where: {
@@ -386,9 +391,10 @@ courseRouter.post("/check", async (req, res) => {
         },
       },
     });
-
-    return res.send("Succesfully scan QR Code");
+    console.log("okayyyyy") 
+    return res.send("Successfully scan QR Code");
   } else {
+    console.log("!!!!!!!")  ;
     return res.send("The amount of student exceeded");
   }
 });
